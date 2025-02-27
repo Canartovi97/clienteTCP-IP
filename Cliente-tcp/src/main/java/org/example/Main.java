@@ -2,26 +2,15 @@ package org.example;
 
 import org.example.Controlador.Controlador;
 import org.example.Modelo.Cliente;
-import org.example.Vista.Vista;
+import org.example.Vista.LoginVista;
 
 public class Main {
     public static void main(String[] args) {
+        LoginVista loginVista = new LoginVista();
+        Cliente cliente = new Cliente(loginVista);
+        Controlador controlador = new Controlador(loginVista, cliente);
+        loginVista.setControlador(controlador);
 
-        Vista vista = new Vista();
-
-
-        Cliente cliente = new Cliente(vista);
-
-
-        Controlador controlador = new Controlador(vista, cliente);
-
-
-        vista.setControlador(controlador);
-
-
-        java.awt.EventQueue.invokeLater(() -> vista.setVisible(true));
-
-
-
+        java.awt.EventQueue.invokeLater(() -> loginVista.setVisible(true));
     }
 }

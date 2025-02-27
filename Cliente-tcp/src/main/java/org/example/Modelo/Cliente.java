@@ -18,15 +18,16 @@ public class Cliente {
         this.listener = listener;
     }
 
-    public void conectar() {
+    public boolean conectar() {
         try {
             socket = new Socket(SERVER_HOST, SERVER_PORT);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             listener.mostrarMensaje("Conectado al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
-            recibirMensajes();
+            return true;
         } catch (IOException e) {
             listener.mostrarMensaje("Error al conectar: " + e.getMessage());
+            return false;
         }
     }
 
@@ -36,17 +37,14 @@ public class Cliente {
         }
     }
 
-    private void recibirMensajes() {
-        new Thread(() -> {
-            try {
-                String mensaje;
-                while ((mensaje = in.readLine()) != null) {
-                    listener.mostrarMensaje("Servidor: " + mensaje);
-                }
-            } catch (IOException e) {
-                listener.mostrarMensaje("Error recibiendo mensajes: " + e.getMessage());
+    public String recibirMensaje() throws IOException {
+        if (in != null) {
+            String mensaje = in.readLine();
+            if (mensaje != null) {
+                return mensaje;
             }
-        }).start();
+        }
+        return "ERROR: No se recibió respuesta del servidor.";
     }
 }
 
