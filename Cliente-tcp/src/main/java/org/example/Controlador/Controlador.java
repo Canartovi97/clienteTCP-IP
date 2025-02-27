@@ -65,23 +65,18 @@ public class Controlador {
 
     public void consultarSaldo(String numeroCuenta) {
         principalVista.mostrarMensaje("Consultando saldo...");
-
         String mensaje = "CONSULTAR_SALDO " + numeroCuenta;
-        System.out.println("Cliente enviando: [" + mensaje + "]");
 
         cliente.enviarMensaje(mensaje);
 
         try {
-            String respuesta = cliente.recibirMensaje();
-            System.out.println("Cliente recibió: [" + respuesta + "]");
+            String respuesta;
+            do {
+                respuesta = cliente.recibirMensaje();
+            } while (respuesta.startsWith("ERROR"));
 
-            // 🔥 Asegurar que procesamos correctamente "SALDO_OK"
-            if (respuesta.startsWith("SALDO_OK")) {
-                String saldo = respuesta.replace("SALDO_OK ", ""); // Elimina "SALDO_OK "
-                principalVista.mostrarMensaje(saldo);
-            } else {
-                principalVista.mostrarMensaje("Error en la respuesta del servidor: " + respuesta);
-            }
+            System.out.println("Cliente recibió: [" + respuesta + "]");
+            principalVista.mostrarMensaje(respuesta);
         } catch (IOException e) {
             principalVista.mostrarMensaje("Error al recibir la respuesta del servidor: " + e.getMessage());
         }
@@ -93,7 +88,19 @@ public class Controlador {
             principalVista.mostrarMensaje("Todos los campos son obligatorios");
             return;
         }
+
         principalVista.mostrarMensaje("Consignando " + monto + " a la cuenta " + cuentaDestino);
-        cliente.enviarMensaje("CONSIGNAR:" + cuentaDestino + "," + monto);
+        String mensaje = "CONSIGNAR " + cuentaDestino + " " + monto;
+        System.out.println("Cliente enviando: [" + mensaje + "]");
+
+        cliente.enviarMensaje(mensaje);
+
+        try {
+            String respuesta = cliente.recibirMensaje();
+            System.out.println("Cliente recibió: [" + respuesta + "]");
+            principalVista.mostrarMensaje(respuesta);
+        } catch (IOException e) {
+            principalVista.mostrarMensaje("Error al recibir la respuesta del servidor: " + e.getMessage());
+        }
     }
 }

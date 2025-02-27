@@ -39,9 +39,11 @@ public class Cliente {
 
     public String recibirMensaje() throws IOException {
         if (in != null) {
-            String mensaje = in.readLine();
-            if (mensaje != null) {
-                return mensaje;
+            String mensaje;
+            while ((mensaje = in.readLine()) != null) {
+                if (!mensaje.trim().isEmpty()) {
+                    return mensaje;
+                }
             }
         }
         return "ERROR: No se recibió respuesta del servidor.";
