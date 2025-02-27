@@ -17,6 +17,10 @@ public class Controlador {
     private BufferedReader in;
     private String usuarioAutenticado;
 
+    private String idUsuario;
+    private String numeroCuenta;
+
+
     public Controlador(LoginVista loginVista, Cliente cliente) {
         this.loginVista = loginVista;
         this.cliente = cliente;
@@ -45,17 +49,23 @@ public class Controlador {
         cliente.enviarMensaje(mensaje);
 
         try {
-            Thread.sleep(500); // Pequeña espera para asegurarse de que el servidor responda
+            Thread.sleep(500);
             String respuesta = cliente.recibirMensaje();
             System.out.println("Cliente recibió: " + respuesta);
 
-            if (respuesta != null && respuesta.startsWith("LOGIN_EXITO")) {
-                usuarioAutenticado = username;
-                loginVista.setVisible(false);
-                principalVista = new PrincipalVista(username);
-                principalVista.setControlador(this);
-            } else {
-                loginVista.mostrarMensaje("Credenciales incorrectas");
+            if (respuesta.startsWith("LOGIN_EXITO")) {
+                String[] partes = respuesta.split("\\s+");
+                if (partes.length == 3) {
+                    usuarioAutenticado = username;
+                    idUsuario = partes[1];
+                    numeroCuenta = partes[2];
+
+                    loginVista.setVisible(false);
+                    principalVista = new PrincipalVista(usuarioAutenticado, numeroCuenta);
+                    principalVista.setControlador(this);
+                } else {
+                    loginVista.mostrarMensaje("Error en la respuesta del servidor.");
+                }
             }
         } catch (IOException | InterruptedException e) {
             loginVista.mostrarMensaje("Error en la comunicación con el servidor: " + e.getMessage());
