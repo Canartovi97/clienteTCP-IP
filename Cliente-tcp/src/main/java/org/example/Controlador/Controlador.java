@@ -28,15 +28,37 @@ public class Controlador {
     }
 
     public void conectarServidor() {
+        int numeroIntentos = 5;
+        int tiempoIntento = 2000;
+
         loginVista.mostrarMensaje("Conectando al servidor...");
-        boolean conectado = cliente.conectar();
-        loginVista.actualizarEstadoServidor(conectado);
-        if (conectado) {
-            loginVista.mostrarMensaje("Conexión establecida con el servidor.");
-        } else {
-            loginVista.mostrarMensaje("Error: No se pudo conectar al servidor.");
+
+        for (int i = 1; i <= numeroIntentos; i++) {
+            boolean conectado = cliente.conectar();
+            loginVista.actualizarEstadoServidor(conectado);
+
+            if (conectado) {
+                loginVista.mostrarMensaje("Conexión establecida con el servidor.");
+                return;
+            } else {
+                loginVista.mostrarMensaje("Intento " + i + " de " + numeroIntentos + " fallido. Reintentando...");
+
+                if (i < numeroIntentos) {
+                    try {
+                        Thread.sleep(tiempoIntento);
+                    } catch (InterruptedException ignored) { }
+                }
+            }
         }
+
+        loginVista.mostrarMensaje("Error: No se pudo conectar después de " + numeroIntentos + " intentos.");
     }
+
+
+
+
+
+
 
     public void validarLogin(String username, String password) {
         if (username.isEmpty() || password.isEmpty()) {
