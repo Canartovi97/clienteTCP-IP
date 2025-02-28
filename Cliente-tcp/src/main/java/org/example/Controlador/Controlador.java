@@ -1,6 +1,7 @@
 package org.example.Controlador;
 
 import org.example.Modelo.Cliente;
+import org.example.Modelo.ListenerC;
 import org.example.Vista.LoginVista;
 import org.example.Vista.PrincipalVista;
 
@@ -8,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.Socket;
 
 public class Controlador {
     private LoginVista loginVista;
@@ -20,6 +22,16 @@ public class Controlador {
     private String idUsuario;
     private String numeroCuenta;
 
+    private Socket socket;
+
+    private boolean conectado = false;
+
+
+    private ListenerC listener;
+
+    int numeroIntentos = 5;
+    int tiempoIntento = 5000;
+
 
     public Controlador(LoginVista loginVista, Cliente cliente) {
         this.loginVista = loginVista;
@@ -29,7 +41,7 @@ public class Controlador {
 
     public void conectarServidor() {
         int numeroIntentos = 5;
-        int tiempoIntento = 2000;
+        int tiempoIntento = 5000;
 
         loginVista.mostrarMensaje("Conectando al servidor...");
 
@@ -52,6 +64,56 @@ public class Controlador {
         }
 
         loginVista.mostrarMensaje("Error: No se pudo conectar después de " + numeroIntentos + " intentos.");
+    }
+
+
+    public boolean conectar() {
+        try {
+            String SERVER_HOST = "localhost";
+            int SERVER_PORT = 12345;
+            socket = new Socket(SERVER_HOST, SERVER_PORT);
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            conectado = true;
+            listener.mostrarMensaje("Conectado al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
+
+            new Thread(this::monitorearConexion).start();
+            return true;
+        } catch (IOException e) {
+            listener.mostrarMensaje("Error al conectar: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private void monitorearConexion() {
+        while (conectado) {
+            try {
+                if (socket.isClosed() || !socket.isConnected()) {
+                    throw new IOException("Conexión perdida.");
+                }
+                Thread.sleep(5000);
+            } catch (IOException | InterruptedException e) {
+                listener.mostrarMensaje("Servidor desconectado. Intentando reconectar...");
+                reconectar();
+                return;
+            }
+        }
+    }
+
+    private void reconectar() {
+        for (int i = 1; i <= numeroIntentos; i++) {
+            listener.mostrarMensaje("Intento de reconexión " + i + " de " + numeroIntentos + "...");
+            boolean reintento = conectar();
+            if (reintento) {
+                listener.mostrarMensaje("Re-conexión exitosa con el servidor.");
+                return;
+            }
+
+            try {
+                Thread.sleep(tiempoIntento);
+            } catch (InterruptedException ignored) { }
+        }
+        listener.mostrarMensaje("No se pudo reconectar al servidor después de " + numeroIntentos + " intentos.");
     }
 
 
