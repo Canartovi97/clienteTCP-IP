@@ -20,28 +20,28 @@ public class Cliente {
 
     public boolean conectar() {
         try {
-            System.out.println("[Cliente] Intentando conectar al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
+            System.out.println("Intentando conectar al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
             socket = new Socket(SERVER_HOST, SERVER_PORT);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             conectado = true;
-            listener.mostrarMensaje("✅ Conectado al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
-            System.out.println("[Cliente] Conexión establecida con el servidor.");
+            listener.mostrarMensaje("Conectado al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
+            System.out.println("Conexión establecida con el servidor.");
 
             // Iniciar escucha de conexión en un hilo separado
             new Thread(this::escucharConexion).start();
 
             return true;
         } catch (IOException e) {
-            listener.mostrarMensaje("❌ Error al conectar: " + e.getMessage());
-            System.out.println("[Cliente] Error al conectar: " + e.getMessage());
+            listener.mostrarMensaje("Error al conectar: " + e.getMessage());
+            System.out.println("Error al conectar: " + e.getMessage());
             return false;
         }
     }
 
     private void escucharConexion() {
         try {
-            // Escuchar si el servidor cierra la conexión
+            
             InputStream input = socket.getInputStream();
             while (conectado) {
                 if (input.read() == -1) {
@@ -49,21 +49,21 @@ public class Cliente {
                 }
             }
         } catch (IOException e) {
-            listener.mostrarMensaje("⚠️ Servidor desconectado. Intentando reconectar...");
-            System.out.println("[Cliente] Servidor desconectado. Iniciando reconexión...");
+            listener.mostrarMensaje("Servidor desconectado. Intentando reconectar...");
+            System.out.println("Servidor desconectado. Iniciando reconexión...");
             reconectar();
         }
     }
 
     private void reconectar() {
         for (int i = 1; i <= numeroIntentos; i++) {
-            listener.mostrarMensaje("🔄 Intento de reconexión " + i + " de " + numeroIntentos + "...");
-            System.out.println("[Cliente] Intento de reconexión " + i + " de " + numeroIntentos + "...");
+            listener.mostrarMensaje("Intento de reconexión " + i + " de " + numeroIntentos + "...");
+            System.out.println("Intento de reconexión " + i + " de " + numeroIntentos + "...");
 
             boolean reintento = conectar();
             if (reintento) {
-                listener.mostrarMensaje("✅ Re-conexión exitosa con el servidor.");
-                System.out.println("[Cliente] Re-conexión exitosa.");
+                listener.mostrarMensaje("Re-conexión exitosa con el servidor.");
+                System.out.println("Re-conexión exitosa.");
                 return;
             }
 
@@ -71,16 +71,16 @@ public class Cliente {
                 Thread.sleep(tiempoIntento);
             } catch (InterruptedException ignored) { }
         }
-        listener.mostrarMensaje("❌ No se pudo reconectar después de " + numeroIntentos + " intentos.");
-        System.out.println("[Cliente] No se pudo reconectar después de " + numeroIntentos + " intentos.");
+        listener.mostrarMensaje("No se pudo reconectar después de " + numeroIntentos + " intentos.");
+        System.out.println("No se pudo reconectar después de " + numeroIntentos + " intentos.");
     }
 
     public void enviarMensaje(String mensaje) {
         if (out != null && conectado) {
-            System.out.println("[Cliente] Enviando mensaje: " + mensaje);
+            System.out.println("Enviando mensaje: " + mensaje);
             out.println(mensaje);
         } else {
-            System.out.println("[Cliente] No se pudo enviar el mensaje. Conexión no establecida.");
+            System.out.println("No se pudo enviar el mensaje. Conexión no establecida.");
         }
     }
 
@@ -88,11 +88,11 @@ public class Cliente {
         if (in != null) {
             String mensaje = in.readLine();
             if (mensaje != null) {
-                System.out.println("[Cliente] Mensaje recibido: " + mensaje);
+                System.out.println("Mensaje recibido: " + mensaje);
                 return mensaje;
             }
         }
-        System.out.println("[Cliente] ERROR: No se recibió respuesta del servidor.");
+        System.out.println("ERROR: No se recibió respuesta del servidor.");
         return "ERROR: No se recibió respuesta del servidor.";
     }
 }
