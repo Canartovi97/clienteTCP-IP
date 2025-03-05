@@ -110,7 +110,7 @@ public class Controlador {
 
         try {
             String respuesta = cliente.recibirMensaje();
-            System.out.println("[Controlador] Respuesta saldo: [" + respuesta + "]");
+            System.out.println("[Controlador] Respuesta recibida: " + respuesta);
             saldoVista.mostrarMensaje(respuesta);
         } catch (IOException e) {
             saldoVista.mostrarMensaje("Error al recibir la respuesta: " + e.getMessage());

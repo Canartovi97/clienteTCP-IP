@@ -60,24 +60,24 @@ public class Cliente {
         }
     }
 
-    /**
-     * Lee UNA línea (respuesta) del servidor.
-     * Si el servidor se cae, readLine() puede devolver null o lanzar IOException.
-     */
+
+
     public String recibirMensaje() throws IOException {
         if (!conectado || in == null) {
             System.out.println("[Cliente] Error: 'recibirMensaje()' llamado sin conexión.");
             return "ERROR: Sin conexión.";
         }
+
         String linea = in.readLine();
-        if (linea == null) {
-            // Significa que el servidor cerró la conexión
-            System.out.println("[Cliente] Servidor cerró la conexión (readLine() = null).");
-            throw new IOException("Conexión cerrada por el servidor.");
+        if (linea == null || linea.trim().isEmpty()) {
+            System.out.println("[Cliente] No se recibió ninguna respuesta del servidor.");
+            return "ERROR: No se recibió respuesta del servidor.";
         }
-        System.out.println("[Cliente] Recibido: " + linea);
-        return linea;
+
+        System.out.println("[Cliente] Mensaje completo recibido: " + linea);
+        return linea.replace("\\n", "\n");  // Convertir los saltos de línea en texto real
     }
+
 
     /**
      * Opción de reconectar en caso de que perder la conexión (IOException).
