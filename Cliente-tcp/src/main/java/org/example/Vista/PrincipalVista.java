@@ -10,17 +10,19 @@ public class PrincipalVista extends JFrame implements ListenerC {
     private JTextArea mensajesTxt;
     private JLabel lblUsuario;
     private Controlador controlador;
+    private String usuario;
 
-    public PrincipalVista(String usuario, String numeroCuenta) {
+    public PrincipalVista(String usuario) {
         this.setTitle("Cliente TCP");
         this.setSize(600, 400);
         this.setLayout(null);
+        this.usuario = usuario;
 
         lblUsuario = new JLabel("Bienvenido, " + usuario);
         lblUsuario.setBounds(200, 10, 300, 20);
         this.add(lblUsuario);
 
-        // Botones organizados en 2 filas
+
         btConsultarSaldo = new JButton("Consultar Saldo");
         btConsultarSaldo.setBounds(100, 50, 180, 30);
         this.add(btConsultarSaldo);
@@ -39,8 +41,9 @@ public class PrincipalVista extends JFrame implements ListenerC {
         scrollPane.setBounds(30, 150, 520, 100);
         this.add(scrollPane);
 
-        btConsultarSaldo.addActionListener(e -> controlador.consultarSaldo(numeroCuenta));
-        btConsultarMovimientos.addActionListener(e -> mostrarPantallaMovimientos(numeroCuenta));
+
+        /*btConsultarMovimientos.addActionListener(e -> mostrarPantallaMovimientos(numeroCuenta));*/
+        btConsultarSaldo.addActionListener(e -> abrirSaldoVista());
         btConsignar.addActionListener(e -> mostrarPantallaConsignacion());
 
         this.setVisible(true);
@@ -52,6 +55,11 @@ public class PrincipalVista extends JFrame implements ListenerC {
 
     private void mostrarPantallaMovimientos(String numeroCuenta) {
         new MovimientosVista(controlador, numeroCuenta);
+    }
+
+    private void abrirSaldoVista() {
+        SaldoVista saldoVista = new SaldoVista(controlador, usuario);
+        saldoVista.setVisible(true);
     }
 
     public void setControlador(Controlador controlador) {
