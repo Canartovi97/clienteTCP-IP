@@ -2,6 +2,11 @@ package org.example.Modelo;
 
 import org.example.Vista.LoginVista;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -24,8 +29,8 @@ public class Cliente {
     private String ultimoUsuario;
     private String ultimaClave;
 
-    private static final int MAX_REINTENTOS = 5;
-    private static final int TIEMPO_ESPERA = 5000;
+    private int maxReintentos;
+    private int tiempoEspera;
 
 
 
@@ -33,10 +38,22 @@ public class Cliente {
 
     public Cliente(ListenerC listener) {
         this.listener = listener;
+        cargarConfiguracion();
     }
 
 
 
+    private void cargarConfiguracion() {
+        Properties propiedades = new Properties();
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("configuracion.properties")) {
+            propiedades.load(input);
+            maxReintentos = Integer.parseInt(propiedades.getProperty("max_reintentos", "5"));
+            tiempoEspera = Integer.parseInt(propiedades.getProperty("tiempo_espera", "5000"));
+        } catch (IOException | NumberFormatException e) {
+            System.out.println("Archivo configuracion no cargo");
+
+        }
+    }
 
 
     public boolean conectar() {
@@ -96,7 +113,7 @@ public class Cliente {
         }
 
         System.out.println("[Cliente] Mensaje completo recibido: " + linea);
-        return linea.replace("\\n", "\n");  // Convertir los saltos de línea en texto real
+        return linea.replace("\\n", "\n");
     }
 
 
@@ -133,13 +150,13 @@ public class Cliente {
         if (conectado) return;
 
         if (listener instanceof LoginVista) {
-            ((LoginVista) listener).setBotonesHabilitados(false); // 🔹 Desactiva botones mientras intenta reconectar
+            ((LoginVista) listener).setBotonesHabilitados(false);
         }
 
         System.out.println("[Cliente] Intentando reconectar...");
 
-        for (int i = 1; i <= 5; i++) {
-            System.out.println("[Cliente] Intento de reconexión " + i + " de 5...");
+        for (int i = 1; i <= maxReintentos; i++) {
+            System.out.println("[Cliente] Intento de reconexión " + i + " de " + maxReintentos);
             if (conectar()) {
                 System.out.println("[Cliente] Reconexión exitosa.");
                 reenviarCredenciales();
@@ -152,11 +169,11 @@ public class Cliente {
                 return;
             }
             try {
-                Thread.sleep(5000);
+                Thread.sleep(tiempoEspera);
             } catch (InterruptedException ignored) {}
         }
 
-        System.out.println("[Cliente] No se pudo reconectar después de 5 intentos.");
+        System.out.println("La reconexion fallo desdepues de " + maxReintentos + " intentos.");
 
         if (listener instanceof LoginVista) {
             ((LoginVista) listener).setBotonesHabilitados(true);
@@ -172,6 +189,21 @@ public class Cliente {
         if (ultimoUsuario != null && ultimaClave != null) {
             enviarMensaje("LOGIN " + ultimoUsuario + " " + ultimaClave);
         }
+    }
+
+    public List<String> obtenerCuentas(String username) {
+        enviarMensaje("OBTENER_CUENTAS " + username);
+        try {
+            String respuesta = recibirMensaje();
+            return Arrays.asList(respuesta.split("\\s+"));
+        } catch (IOException e) {
+            System.out.println("[Cliente] Error al obtener cuentas: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    public String getUsuarioActual() {
+        return this.ultimoUsuario;
     }
 
 

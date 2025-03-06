@@ -7,6 +7,7 @@ import org.example.Vista.PrincipalVista;
 import org.example.Vista.SaldoVista;
 
 import java.io.IOException;
+import java.util.List;
 
 public class Controlador {
     private final LoginVista loginVista;
@@ -102,16 +103,17 @@ public class Controlador {
     }
 
 
-    public void realizarConsignacion(String cuentaDestino, String monto) {
+
+    public void realizarConsignacion(String cuentaOrigen, String cuentaDestino, String monto) {
         if (principalVista == null) return;
 
-        if (cuentaDestino.isEmpty() || monto.isEmpty()) {
+        if (cuentaOrigen.isEmpty() || cuentaDestino.isEmpty() || monto.isEmpty()) {
             principalVista.mostrarMensaje("Todos los campos son obligatorios");
             return;
         }
 
-        principalVista.mostrarMensaje("Consignando $" + monto + " a la cuenta " + cuentaDestino);
-        String comando = "CONSIGNAR " + cuentaDestino + " " + monto;
+        principalVista.mostrarMensaje("Consignando $" + monto + " de la cuenta " + cuentaOrigen + " a la cuenta " + cuentaDestino);
+        String comando = "CONSIGNAR " + cuentaOrigen + " " + cuentaDestino + " " + monto;
         System.out.println("[Controlador] Enviando: " + comando);
 
         cliente.enviarMensaje(comando);
@@ -123,4 +125,14 @@ public class Controlador {
             principalVista.mostrarMensaje("Error al recibir respuesta: " + e.getMessage());
         }
     }
+
+    public List<String> obtenerCuentasDelUsuario(String username) {
+        return cliente.obtenerCuentas(username); // Implementado en Cliente
+    }
+
+    public String getUsuarioActual() {
+        return cliente.getUsuarioActual();
+    }
+
+
 }

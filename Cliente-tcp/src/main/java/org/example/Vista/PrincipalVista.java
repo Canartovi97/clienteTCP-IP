@@ -4,6 +4,7 @@ import org.example.Controlador.Controlador;
 import org.example.Modelo.ListenerC;
 
 import javax.swing.*;
+import java.util.List;
 
 public class PrincipalVista extends JFrame implements ListenerC {
     private JButton btConsultarSaldo, btConsignar, btConsultarMovimientos;
@@ -50,7 +51,9 @@ public class PrincipalVista extends JFrame implements ListenerC {
     }
 
     private void mostrarPantallaConsignacion() {
-        new ConsignacionVista(controlador);
+        String username = controlador.getUsuarioActual(); // Obtener el usuario autenticado
+        List<String> cuentasUsuario = controlador.obtenerCuentasDelUsuario(username);
+        new ConsignacionVista(controlador, cuentasUsuario);
     }
 
     private void mostrarPantallaMovimientos(String numeroCuenta) {
