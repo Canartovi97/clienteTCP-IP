@@ -36,23 +36,7 @@ public class Cliente {
     }
 
 
-   /* public boolean conectar() {
-        try {
-            socket = new Socket("localhost", 12345);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
-            System.out.println("[Cliente] Conexión establecida con el servidor.");
-            conectado = true;
 
-            if (!monitoreando) {
-                iniciarMonitoreoServidor();
-            }
-            return true;
-        } catch (IOException e) {
-            System.out.println("[Cliente] No se pudo conectar al servidor: " + e.getMessage());
-            return false;
-        }
-    }*/
 
 
     public boolean conectar() {
@@ -62,7 +46,7 @@ public class Cliente {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
 
-            // **Conectar el socket de monitoreo (PING)**
+
             System.out.println("[Cliente] Conectando socket de monitoreo en " + SERVER_HOST + ":" + PING_PORT);
             pingSocket = new Socket(SERVER_HOST, PING_PORT);
             pingIn = new BufferedReader(new InputStreamReader(pingSocket.getInputStream()));
@@ -71,7 +55,7 @@ public class Cliente {
             listener.mostrarMensaje(" Conectado al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
             conectado = true;
 
-            // **Iniciar el monitoreo solo si no está corriendo**
+
             if (!monitoreando) {
                 iniciarMonitoreoServidor();
             }
@@ -175,7 +159,7 @@ public class Cliente {
         System.out.println("[Cliente] No se pudo reconectar después de 5 intentos.");
 
         if (listener instanceof LoginVista) {
-            ((LoginVista) listener).setBotonesHabilitados(true); // 🔹 Reactiva botones si no logró reconectar
+            ((LoginVista) listener).setBotonesHabilitados(true);
         }
     }
 

@@ -40,10 +40,7 @@ public class Controlador {
     }
 
 
-    /**
-     * Envía el comando "LOGIN <user> <pass>", recibe "LOGIN_EXITO" o "LOGIN_FALLIDO".
-     * Si es éxito, manda "OBTENER_INFO_USUARIO" y procesa la respuesta "idUsuario numeroCuenta".
-     */
+
     public void validarLogin(String username, String password) {
         if (username.isEmpty() || password.isEmpty()) {
             loginVista.mostrarMensaje("Los campos no pueden estar vacíos.");
@@ -60,10 +57,11 @@ public class Controlador {
 
 
             if (respuesta.startsWith("LOGIN_EXITO")) {
-                System.out.println("Esta es la respuesta " + respuesta);
+
                 String[] partes = respuesta.split("\\s+");
                 System.out.println("Esta es la respuesta " + respuesta);
 
+                cliente.guardarCredenciales(username,password);
                 loginVista.setVisible(false);
                 principalVista = new PrincipalVista(username);
                 principalVista.setControlador(this);
