@@ -3,40 +3,60 @@ package org.example.Vista;
 import org.example.Controlador.Controlador;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
 
 public class MovimientosVista extends JFrame {
-    private JTable tablaMovimientos;
-    private DefaultTableModel modeloTabla;
-    private JLabel lblNumeroCuenta;
+    private JTextArea areaMovimientos;
+    private JComboBox<String> comboCuentas;
+    private JButton btnConsultar;
     private Controlador controlador;
-    private String numeroCuenta;
 
-    public MovimientosVista(Controlador controlador, String numeroCuenta) {
+    public MovimientosVista(Controlador controlador, List<String> cuentas) {
         this.controlador = controlador;
-        this.numeroCuenta = numeroCuenta;
 
         this.setTitle("Movimientos de Cuenta");
-        this.setSize(600, 300);
+        this.setSize(600, 400);
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.setLayout(null);
+        this.setLayout(new BorderLayout());
 
-        lblNumeroCuenta = new JLabel("Número de cuenta: " + numeroCuenta);
-        lblNumeroCuenta.setBounds(20, 10, 300, 20);
-        this.add(lblNumeroCuenta);
+        JPanel panelSuperior = new JPanel();
+        panelSuperior.add(new JLabel("Seleccione una cuenta:"));
+        comboCuentas = new JComboBox<>(cuentas.toArray(new String[0]));
+        panelSuperior.add(comboCuentas);
 
-        String[] columnas = {"Movimiento", "No Cuenta", "Valor", "Descripción"};
-        modeloTabla = new DefaultTableModel(columnas, 0);
-        tablaMovimientos = new JTable(modeloTabla);
+        btnConsultar = new JButton("Consultar");
+        panelSuperior.add(btnConsultar);
 
-        JScrollPane scrollPane = new JScrollPane(tablaMovimientos);
-        scrollPane.setBounds(20, 40, 540, 180);
-        this.add(scrollPane);
+        this.add(panelSuperior, BorderLayout.NORTH);
+
+
+        areaMovimientos = new JTextArea();
+        areaMovimientos.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(areaMovimientos);
+        this.add(scrollPane, BorderLayout.CENTER);
+
+        // Evento del botón consultar
+        btnConsultar.addActionListener(e -> {
+            String cuentaSeleccionada = (String) comboCuentas.getSelectedItem();
+            if (cuentaSeleccionada != null) {
+                controlador.consultarMovimientos(cuentaSeleccionada);
+            }
+        });
 
         this.setVisible(true);
     }
 
-    public void agregarMovimiento(String movimiento, String noCuenta, String valor, String descripcion) {
-        modeloTabla.addRow(new Object[]{movimiento, noCuenta, valor, descripcion});
+   /* public void actualizarMovimientos(String movimientos) {
+        System.out.println("[MovimientosVista] Recibiendo movimientos:\n" + movimientos); // ✅ Verifica la recepción
+        areaMovimientos.setText(movimientos); // 🔹 Mostrar los movimientos en el JTextArea
+    }*/
+
+    public void actualizarMovimientos(String movimientos) {
+        System.out.println("[MovimientosVista] Recibiendo movimientos:\n" + movimientos); // ✅ Verifica la recepción
+
+        SwingUtilities.invokeLater(() -> {
+            areaMovimientos.setText(movimientos); // 🔹 Mostrar los movimientos en el JTextArea
+        });
     }
 }

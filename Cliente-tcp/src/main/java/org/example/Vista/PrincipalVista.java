@@ -1,12 +1,11 @@
 package org.example.Vista;
 
 import org.example.Controlador.Controlador;
-import org.example.Modelo.ListenerC;
 
 import javax.swing.*;
 import java.util.List;
 
-public class PrincipalVista extends JFrame implements ListenerC {
+public class PrincipalVista extends JFrame {
     private JButton btConsultarSaldo, btConsignar, btConsultarMovimientos;
     private JTextArea mensajesTxt;
     private JLabel lblUsuario;
@@ -22,7 +21,6 @@ public class PrincipalVista extends JFrame implements ListenerC {
         lblUsuario = new JLabel("Bienvenido, " + usuario);
         lblUsuario.setBounds(200, 10, 300, 20);
         this.add(lblUsuario);
-
 
         btConsultarSaldo = new JButton("Consultar Saldo");
         btConsultarSaldo.setBounds(100, 50, 180, 30);
@@ -42,22 +40,35 @@ public class PrincipalVista extends JFrame implements ListenerC {
         scrollPane.setBounds(30, 150, 520, 100);
         this.add(scrollPane);
 
-
-        /*btConsultarMovimientos.addActionListener(e -> mostrarPantallaMovimientos(numeroCuenta));*/
         btConsultarSaldo.addActionListener(e -> abrirSaldoVista());
         btConsignar.addActionListener(e -> mostrarPantallaConsignacion());
+        btConsultarMovimientos.addActionListener(e -> mostrarPantallaMovimientos());
 
         this.setVisible(true);
     }
 
-    private void mostrarPantallaConsignacion() {
-        String username = controlador.getUsuarioActual(); // Obtener el usuario autenticado
+
+    private void mostrarPantallaMovimientos() {
+        if (controlador == null) {
+            System.out.println("[PrincipalVista] Error: Controlador no asignado.");
+            return;
+        }
+
+        String username = controlador.getUsuarioActual();
         List<String> cuentasUsuario = controlador.obtenerCuentasDelUsuario(username);
-        new ConsignacionVista(controlador, cuentasUsuario);
+
+        if (cuentasUsuario.isEmpty()) {
+            mostrarMensaje("No se encontraron cuentas asociadas al usuario.");
+            return;
+        }
+
+        new MovimientosVista(controlador, cuentasUsuario);
     }
 
-    private void mostrarPantallaMovimientos(String numeroCuenta) {
-        new MovimientosVista(controlador, numeroCuenta);
+    private void mostrarPantallaConsignacion() {
+        String username = controlador.getUsuarioActual();
+        List<String> cuentasUsuario = controlador.obtenerCuentasDelUsuario(username);
+        new ConsignacionVista(controlador, cuentasUsuario);
     }
 
     private void abrirSaldoVista() {
@@ -69,7 +80,6 @@ public class PrincipalVista extends JFrame implements ListenerC {
         this.controlador = controlador;
     }
 
-    @Override
     public void mostrarMensaje(String mensaje) {
         mensajesTxt.append(mensaje + "\n");
     }

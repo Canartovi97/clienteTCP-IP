@@ -3,10 +3,12 @@ package org.example.Controlador;
 import org.example.Modelo.Cliente;
 import org.example.Modelo.ListenerC;
 import org.example.Vista.LoginVista;
+import org.example.Vista.MovimientosVista;
 import org.example.Vista.PrincipalVista;
 import org.example.Vista.SaldoVista;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Controlador {
@@ -14,6 +16,7 @@ public class Controlador {
     private PrincipalVista principalVista;
     private final Cliente cliente;
 
+    private MovimientosVista movimientosVista;
 
 
 
@@ -133,6 +136,67 @@ public class Controlador {
     public String getUsuarioActual() {
         return cliente.getUsuarioActual();
     }
+
+
+    public void mostrarMovimientosVista() {
+        String usuario = cliente.getUsuarioActual(); // Obtener usuario autenticado
+        List<String> cuentas = cliente.obtenerCuentas(usuario); // Obtener cuentas desde el servidor
+
+        if (cuentas.isEmpty()) {
+            System.out.println("[Controlador] No se encontraron cuentas asociadas.");
+            return;
+        }
+
+
+        if (movimientosVista == null) {
+            movimientosVista = new MovimientosVista(this, cuentas);
+        } else {
+            System.out.println("[Controlador] MovimientosVista ya estaba inicializada.");
+        }
+    }
+
+    public void consultarMovimientos(String numeroCuenta) {
+        System.out.println("[Controlador] Consultando movimientos de la cuenta: " + numeroCuenta);
+
+        // ✅ Verifica que la ventana está creada antes de continuar
+        if (movimientosVista == null) {
+            System.out.println("[Controlador] ERROR: MovimientosVista no inicializada. Creándola...");
+            mostrarMovimientosVista(); // Crearla antes de continuar
+        }
+
+        cliente.enviarMensaje("CONSULTAR_MOVIMIENTOS " + numeroCuenta);
+
+        try {
+            String respuesta = cliente.recibirMensaje();
+            System.out.println("[Controlador] Respuesta movimientos: " + respuesta);
+
+            if (movimientosVista != null) {
+                movimientosVista.actualizarMovimientos(respuesta); 
+            } else {
+                System.out.println("[Controlador] ERROR: MovimientosVista sigue sin estar inicializada.");
+            }
+        } catch (IOException e) {
+            System.out.println("[Controlador] Error al recibir movimientos: " + e.getMessage());
+        }
+    }
+
+
+
+
+
+    private List<String[]> parsearMovimientos(String respuesta) {
+        List<String[]> movimientos = new ArrayList<>();
+
+        String[] filas = respuesta.split(";");
+        for (String fila : filas) {
+            String[] datos = fila.split(",");
+            if (datos.length == 4) { // Asegurar que tenga los datos correctos
+                movimientos.add(datos);
+            }
+        }
+        return movimientos;
+    }
+
 
 
 }
