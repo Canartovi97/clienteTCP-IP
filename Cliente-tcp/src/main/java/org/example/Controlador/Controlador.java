@@ -11,12 +11,12 @@ import java.io.IOException;
 public class Controlador {
     private final LoginVista loginVista;
     private PrincipalVista principalVista;
-    private SaldoVista saldoVista;
     private final Cliente cliente;
 
 
-    private String idUsuario;
-    private String numeroCuenta;
+
+
+
 
     public Controlador(LoginVista loginVista, Cliente cliente) {
         this.loginVista = loginVista;
@@ -24,35 +24,21 @@ public class Controlador {
         this.loginVista.setControlador(this);
     }
 
-    /**
-     * Conexión con reintentos
-     */
+
     public void conectarServidor() {
-        int numeroIntentos = 5;
-        int tiempoIntento = 5000;
-
-        loginVista.mostrarMensaje("Conectando al servidor...");
-
-
-        for (int i = 1; i <= numeroIntentos; i++) {
+        new Thread(() -> {
+            loginVista.mostrarMensaje("Conectando al servidor...");
             boolean ok = cliente.conectar();
             loginVista.actualizarEstadoServidor(ok);
 
             if (ok) {
-                loginVista.mostrarMensaje(" Conexión establecida con el servidor.");
-                return;
+                loginVista.mostrarMensaje("Conexión establecida con el servidor.");
             } else {
-                loginVista.mostrarMensaje("Intento " + i + " de " + numeroIntentos + " fallido. Reintentando...");
-                if (i < numeroIntentos) {
-                    try {
-                        Thread.sleep(tiempoIntento);
-                    } catch (InterruptedException ignored) { }
-                }
+                loginVista.mostrarMensaje("Error: No se pudo conectar al servidor.");
             }
-        }
-
-        loginVista.mostrarMensaje("Error: No se pudo conectar después de " + numeroIntentos + " intentos.");
+        }).start();
     }
+
 
     /**
      * Envía el comando "LOGIN <user> <pass>", recibe "LOGIN_EXITO" o "LOGIN_FALLIDO".

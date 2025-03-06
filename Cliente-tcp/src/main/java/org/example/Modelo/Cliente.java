@@ -8,49 +8,84 @@ public class Cliente {
     private PrintWriter out;
     private BufferedReader in;
     private ListenerC listener;
+    private PrintWriter pingOut;
+    private BufferedReader pingIn;
+    private Socket pingSocket;
 
     private final String SERVER_HOST = "localhost";
     private final int SERVER_PORT = 12345;
+    private final int PING_PORT = 12346;
     private boolean conectado = false;
+    private boolean monitoreando = false;
 
-    // Opciones para reintentos de reconexión
-    private final int numeroIntentos = 5;
-    private final int tiempoIntento = 5000;
+
+    private String ultimoUsuario;
+    private String ultimaClave;
+
+    private static final int MAX_REINTENTOS = 5;
+    private static final int TIEMPO_ESPERA = 5000;
+
+
+
+
 
     public Cliente(ListenerC listener) {
         this.listener = listener;
     }
 
-    /**
-     * Intenta conectar al servidor, y si lo logra, queda listo para
-     * enviar/recibir con enviarMensaje(...) y recibirMensaje(...).
-     */
+
+   /* public boolean conectar() {
+        try {
+            socket = new Socket("localhost", 12345);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+            System.out.println("[Cliente] Conexión establecida con el servidor.");
+            conectado = true;
+
+            if (!monitoreando) {
+                iniciarMonitoreoServidor();
+            }
+            return true;
+        } catch (IOException e) {
+            System.out.println("[Cliente] No se pudo conectar al servidor: " + e.getMessage());
+            return false;
+        }
+    }*/
+
+
     public boolean conectar() {
         try {
             System.out.println("[Cliente] Intentando conectar al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
             socket = new Socket(SERVER_HOST, SERVER_PORT);
-
-            out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
 
+            // **Conectar el socket de monitoreo (PING)**
+            System.out.println("[Cliente] Conectando socket de monitoreo en " + SERVER_HOST + ":" + PING_PORT);
+            pingSocket = new Socket(SERVER_HOST, PING_PORT);
+            pingIn = new BufferedReader(new InputStreamReader(pingSocket.getInputStream()));
+            pingOut = new PrintWriter(pingSocket.getOutputStream(), true);
+
+            listener.mostrarMensaje(" Conectado al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
             conectado = true;
-            listener.mostrarMensaje("✅ Conectado al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
-            System.out.println("[Cliente] Conexión establecida con el servidor.");
 
-            // Si quisieras un hilo que ESCUCHE mensajes continuamente,
-            // podrías implementarlo aquí. Pero ojo, no mezclar con recibirMensaje().
+            // **Iniciar el monitoreo solo si no está corriendo**
+            if (!monitoreando) {
+                iniciarMonitoreoServidor();
+            }
+
             return true;
-
         } catch (IOException e) {
-            listener.mostrarMensaje("❌ Error al conectar: " + e.getMessage());
-            System.out.println("[Cliente] Error al conectar: " + e.getMessage());
+            listener.mostrarMensaje("Error al conectar: " + e.getMessage());
+            System.out.println("[Cliente] No se pudo conectar al servidor: " + e.getMessage());
             return false;
         }
     }
 
-    /**
-     * Envía un mensaje al servidor si existe la conexión.
-     */
+
+
+
+
     public void enviarMensaje(String mensaje) {
         if (out != null && conectado) {
             System.out.println("[Cliente] Enviando: " + mensaje);
@@ -79,41 +114,61 @@ public class Cliente {
     }
 
 
-    /**
-     * Opción de reconectar en caso de que perder la conexión (IOException).
-     * Intenta 'numeroIntentos' veces cada 'tiempoIntento' milisegundos.
-     */
-    public void reconectar() {
-        desconectar(); // cierra el socket anterior
-        for (int i = 1; i <= numeroIntentos; i++) {
-            listener.mostrarMensaje("Intento de reconexión " + i + " de " + numeroIntentos + "...");
-            System.out.println("[Cliente] Intento de reconexión " + i + " de " + numeroIntentos + "...");
+    private void iniciarMonitoreoServidor() {
+        if (monitoreando) return;
+        monitoreando = true;
 
-            boolean reintento = conectar();
-            if (reintento) {
-                listener.mostrarMensaje("✅ Re-conexión exitosa con el servidor.");
-                System.out.println("[Cliente] Re-conexión exitosa.");
+        new Thread(() -> {
+            while (conectado) {
+                try {
+                    pingOut.println("PING");
+                    String respuesta = pingIn.readLine();
+
+                    if (respuesta == null || !respuesta.equals("PONG")) {
+                        throw new IOException("No se recibió PONG del servidor.");
+                    }
+
+                    System.out.println("[Cliente] PING exitoso.");
+                    Thread.sleep(10000);
+                } catch (Exception e) {
+                    System.out.println("[Cliente] ERROR: Conexión perdida.");
+                    reconectar();
+                    monitoreando = false;
+                    break;
+                }
+            }
+        }).start();
+    }
+
+
+
+    private synchronized void reconectar() {
+        if (conectado) return;
+
+        conectado = false;
+        for (int i = 1; i <= MAX_REINTENTOS; i++) {
+            System.out.println("[Cliente] Intento de reconexión " + i + " de " + MAX_REINTENTOS);
+            if (conectar()) {
+                System.out.println("[Cliente] Reconexión exitosa.");
                 return;
             }
             try {
-                Thread.sleep(tiempoIntento);
-            } catch (InterruptedException ignored) {
-            }
+                Thread.sleep(TIEMPO_ESPERA);
+            } catch (InterruptedException ignored) {}
         }
-        listener.mostrarMensaje("❌ No se pudo reconectar al servidor después de " + numeroIntentos + " intentos.");
-        System.out.println("[Cliente] No se pudo reconectar después de " + numeroIntentos + " intentos.");
+        System.out.println("[Cliente] No se pudo reconectar después de " + MAX_REINTENTOS + " intentos.");
     }
 
-    /**
-     * Cierra la conexión explícitamente.
-     */
-    public void desconectar() {
-        conectado = false;
-        if (socket != null && !socket.isClosed()) {
-            try {
-                socket.close();
-            } catch (IOException ignored) {
-            }
+    public void guardarCredenciales(String usuario, String clave) {
+        this.ultimoUsuario = usuario;
+        this.ultimaClave = clave;
+    }
+
+    private void reenviarCredenciales() {
+        if (ultimoUsuario != null && ultimaClave != null) {
+            enviarMensaje("LOGIN " + ultimoUsuario + " " + ultimaClave);
         }
     }
+
+
 }
