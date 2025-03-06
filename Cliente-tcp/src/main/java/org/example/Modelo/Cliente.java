@@ -1,5 +1,7 @@
 package org.example.Modelo;
 
+import org.example.Vista.LoginVista;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -132,6 +134,7 @@ public class Cliente {
                     Thread.sleep(10000);
                 } catch (Exception e) {
                     System.out.println("[Cliente] ERROR: Conexión perdida.");
+                    conectado = false;
                     reconectar();
                     monitoreando = false;
                     break;
@@ -145,18 +148,35 @@ public class Cliente {
     private synchronized void reconectar() {
         if (conectado) return;
 
-        conectado = false;
-        for (int i = 1; i <= MAX_REINTENTOS; i++) {
-            System.out.println("[Cliente] Intento de reconexión " + i + " de " + MAX_REINTENTOS);
+        if (listener instanceof LoginVista) {
+            ((LoginVista) listener).setBotonesHabilitados(false); // 🔹 Desactiva botones mientras intenta reconectar
+        }
+
+        System.out.println("[Cliente] Intentando reconectar...");
+
+        for (int i = 1; i <= 5; i++) {
+            System.out.println("[Cliente] Intento de reconexión " + i + " de 5...");
             if (conectar()) {
                 System.out.println("[Cliente] Reconexión exitosa.");
+                reenviarCredenciales();
+                iniciarMonitoreoServidor();
+
+                if (listener instanceof LoginVista) {
+                    ((LoginVista) listener).setBotonesHabilitados(true);
+                }
+
                 return;
             }
             try {
-                Thread.sleep(TIEMPO_ESPERA);
+                Thread.sleep(5000);
             } catch (InterruptedException ignored) {}
         }
-        System.out.println("[Cliente] No se pudo reconectar después de " + MAX_REINTENTOS + " intentos.");
+
+        System.out.println("[Cliente] No se pudo reconectar después de 5 intentos.");
+
+        if (listener instanceof LoginVista) {
+            ((LoginVista) listener).setBotonesHabilitados(true); // 🔹 Reactiva botones si no logró reconectar
+        }
     }
 
     public void guardarCredenciales(String usuario, String clave) {

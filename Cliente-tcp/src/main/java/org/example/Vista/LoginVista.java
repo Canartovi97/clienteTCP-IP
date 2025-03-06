@@ -4,6 +4,7 @@ import org.example.Controlador.Controlador;
 import org.example.Modelo.ListenerC;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class LoginVista extends JFrame implements ListenerC {
     private JTextField txtUsername, txtPassword;
@@ -14,41 +15,47 @@ public class LoginVista extends JFrame implements ListenerC {
 
     public LoginVista() {
         this.setTitle("Login - Cliente TCP");
-        this.setSize(400, 300);
+        this.setSize(400, 500);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(null);
 
+        JLabel lblTitulo = new JLabel("Login Banco TCP", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
+        lblTitulo.setBounds(80, 10, 220, 30);
+        this.add(lblTitulo);
+
+
         JLabel lblUser = new JLabel("Usuario:");
-        lblUser.setBounds(50, 30, 100, 20);
+        lblUser.setBounds(50, 50, 100, 20);
         this.add(lblUser);
 
         txtUsername = new JTextField();
-        txtUsername.setBounds(150, 30, 180, 25);
+        txtUsername.setBounds(150, 50, 180, 25);
         txtUsername.setEnabled(false);
         this.add(txtUsername);
 
         JLabel lblPass = new JLabel("Contraseña:");
-        lblPass.setBounds(50, 70, 100, 20);
+        lblPass.setBounds(50, 90, 100, 20);
         this.add(lblPass);
 
         txtPassword = new JPasswordField();
-        txtPassword.setBounds(150, 70, 180, 25);
+        txtPassword.setBounds(150, 90, 180, 25);
         txtPassword.setEnabled(false);
         this.add(txtPassword);
 
         btLogin = new JButton("Iniciar sesión");
-        btLogin.setBounds(120, 110, 150, 30);
+        btLogin.setBounds(120, 130, 150, 30);
         btLogin.setEnabled(false);
         this.add(btLogin);
 
         btConectar = new JButton("Conectar Servidor");
-        btConectar.setBounds(120, 150, 150, 30);
+        btConectar.setBounds(120, 170, 150, 30);
         this.add(btConectar);
 
         mensajesTxt = new JTextArea();
         mensajesTxt.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(mensajesTxt);
-        scrollPane.setBounds(50, 190, 300, 50);
+        scrollPane.setBounds(50, 210, 300, 150);
         this.add(scrollPane);
 
         btLogin.addActionListener(e -> {
@@ -69,6 +76,14 @@ public class LoginVista extends JFrame implements ListenerC {
     @Override
     public void mostrarMensaje(String mensaje) {
         mensajesTxt.append(mensaje + "\n");
+    }
+
+
+    public void setBotonesHabilitados(boolean habilitado) {
+        btLogin.setEnabled(habilitado);
+        btConectar.setEnabled(habilitado);
+        txtUsername.setEnabled(habilitado);
+        txtPassword.setEnabled(habilitado);
     }
 
     public void actualizarEstadoServidor(boolean conectado) {
