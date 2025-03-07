@@ -29,6 +29,9 @@ public class Cliente {
     private String ultimoUsuario;
     private String ultimaClave;
 
+    private String ultimaTransaccion = "";
+
+
     private int maxReintentos;
     private int tiempoEspera;
 
@@ -92,10 +95,24 @@ public class Cliente {
     public void enviarMensaje(String mensaje) {
         if (out != null && conectado) {
             System.out.println("[Cliente] Enviando: " + mensaje);
-            out.println(mensaje);
+            if (mensaje.startsWith("LOGIN")){
+                System.out.println("No guarda el ultimo mensaje es un login ");
+                out.println(mensaje);
+            } else {
+                ultimaTransaccion = mensaje;
+                System.out.println("Mensaje guardado en ultima transaccion "+ ultimaTransaccion);
+                out.println(mensaje);
+            }
+
         } else {
             System.out.println("[Cliente] No se pudo enviar. Conexión no establecida.");
         }
+    }
+
+    public void enviarUltimaTransaccion (){
+
+            enviarMensaje(ultimaTransaccion);
+
     }
 
 
@@ -160,6 +177,7 @@ public class Cliente {
             if (conectar()) {
                 System.out.println("[Cliente] Reconexión exitosa.");
                 reenviarCredenciales();
+                enviarUltimaTransaccion();
                 iniciarMonitoreoServidor();
 
                 if (listener instanceof LoginVista) {

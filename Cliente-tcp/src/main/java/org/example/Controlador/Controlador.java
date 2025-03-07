@@ -158,7 +158,7 @@ public class Controlador {
     public void consultarMovimientos(String numeroCuenta) {
         System.out.println("[Controlador] Consultando movimientos de la cuenta: " + numeroCuenta);
 
-        // ✅ Verifica que la ventana está creada antes de continuar
+
         if (movimientosVista == null) {
             System.out.println("[Controlador] ERROR: MovimientosVista no inicializada. Creándola...");
             mostrarMovimientosVista(); // Crearla antes de continuar
@@ -171,7 +171,7 @@ public class Controlador {
             System.out.println("[Controlador] Respuesta movimientos: " + respuesta);
 
             if (movimientosVista != null) {
-                movimientosVista.actualizarMovimientos(respuesta); 
+                movimientosVista.actualizarMovimientos(respuesta);
             } else {
                 System.out.println("[Controlador] ERROR: MovimientosVista sigue sin estar inicializada.");
             }
