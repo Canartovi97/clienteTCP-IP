@@ -17,11 +17,11 @@ public class Cliente {
     private ListenerC listener;
     private PrintWriter pingOut;
     private BufferedReader pingIn;
-    private Socket pingSocket;
+
 
     private final String SERVER_HOST = "localhost";
     private final int SERVER_PORT = 12345;
-    private final int PING_PORT = 12346;
+
     private boolean conectado = false;
     private boolean monitoreando = false;
 
@@ -67,10 +67,8 @@ public class Cliente {
             out = new PrintWriter(socket.getOutputStream(), true);
 
 
-            System.out.println("[Cliente] Conectando socket de monitoreo en " + SERVER_HOST + ":" + PING_PORT);
-            pingSocket = new Socket(SERVER_HOST, PING_PORT);
-            pingIn = new BufferedReader(new InputStreamReader(pingSocket.getInputStream()));
-            pingOut = new PrintWriter(pingSocket.getOutputStream(), true);
+
+
 
             listener.mostrarMensaje(" Conectado al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
             conectado = true;
