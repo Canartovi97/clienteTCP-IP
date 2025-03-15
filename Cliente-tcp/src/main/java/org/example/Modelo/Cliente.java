@@ -66,22 +66,11 @@ public class Cliente {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
 
-
-
-
-
-            listener.mostrarMensaje(" Conectado al servidor en " + SERVER_HOST + ":" + SERVER_PORT);
+            System.out.println("[Cliente] Conexión exitosa con el servidor en " + socket.getInetAddress() + ":" + socket.getPort());
             conectado = true;
-
-
-            if (!monitoreando) {
-                iniciarMonitoreoServidor();
-            }
-
             return true;
         } catch (IOException e) {
-            listener.mostrarMensaje("Error al conectar: " + e.getMessage());
-            System.out.println("[Cliente] No se pudo conectar al servidor: " + e.getMessage());
+            System.out.println("[Cliente] Error al conectar: " + e.getMessage());
             return false;
         }
     }
@@ -93,15 +82,7 @@ public class Cliente {
     public void enviarMensaje(String mensaje) {
         if (out != null && conectado) {
             System.out.println("[Cliente] Enviando: " + mensaje);
-            if (mensaje.startsWith("LOGIN")){
-                System.out.println("No guarda el ultimo mensaje es un login ");
-                out.println(mensaje);
-            } else {
-                ultimaTransaccion = mensaje;
-                System.out.println("Mensaje guardado en ultima transaccion "+ ultimaTransaccion);
-                out.println(mensaje);
-            }
-
+            out.println(mensaje);
         } else {
             System.out.println("[Cliente] No se pudo enviar. Conexión no establecida.");
         }
